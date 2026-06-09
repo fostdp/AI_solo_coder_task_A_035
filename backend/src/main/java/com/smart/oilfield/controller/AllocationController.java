@@ -1,7 +1,7 @@
 package com.smart.oilfield.controller;
 
-import com.smart.oilfield.dto.AllocationSuggestionDTO;
-import com.smart.oilfield.service.AllocationOptimizationService;
+import com.smart.oilfield.entity.AllocationSuggestion;
+import com.smart.oilfield.service.InjectionOptimizer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +17,11 @@ import java.util.Map;
 public class AllocationController {
 
     @Autowired
-    private AllocationOptimizationService allocationService;
+    private InjectionOptimizer injectionOptimizer;
 
     @GetMapping("/latest")
     public ResponseEntity<Map<String, Object>> getLatestSuggestions() {
-        List<AllocationSuggestionDTO> suggestions = allocationService.getLatestSuggestions();
+        List<AllocationSuggestion> suggestions = injectionOptimizer.getLatestSuggestions();
 
         Map<String, Object> result = new HashMap<>();
         result.put("suggestions", suggestions);
@@ -40,24 +40,17 @@ public class AllocationController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/date")
-    public ResponseEntity<List<AllocationSuggestionDTO>> getSuggestionsByDate(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
-        List<AllocationSuggestionDTO> suggestions = allocationService.getSuggestionsByDate(date);
-        return ResponseEntity.ok(suggestions);
-    }
-
     @GetMapping("/well/{wellId}")
-    public ResponseEntity<List<AllocationSuggestionDTO>> getSuggestionsByWell(
+    public ResponseEntity<List<AllocationSuggestion>> getSuggestionsByWell(
             @PathVariable String wellId) {
-        List<AllocationSuggestionDTO> suggestions = allocationService.getSuggestionsByWell(wellId);
+        List<AllocationSuggestion> suggestions = injectionOptimizer.getSuggestionsByWell(wellId);
         return ResponseEntity.ok(suggestions);
     }
 
     @PostMapping("/run-now")
     public ResponseEntity<Map<String, Object>> runOptimizationNow() {
-        allocationService.runOptimizationNow();
-        List<AllocationSuggestionDTO> suggestions = allocationService.getLatestSuggestions();
+        injectionOptimizer.runFullOptimization();
+        List<AllocationSuggestion> suggestions = injectionOptimizer.getLatestSuggestions();
 
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Allocation optimization completed");
@@ -70,7 +63,7 @@ public class AllocationController {
     public ResponseEntity<Map<String, Object>> optimizeBlock(
             @PathVariable String blockName) {
         LocalDate today = LocalDate.now();
-        var suggestions = allocationService.optimizeBlockAllocation(blockName, today);
+        var suggestions = injectionOptimizer.optimizeBlockAllocation(blockName, today);
 
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Block optimization completed");

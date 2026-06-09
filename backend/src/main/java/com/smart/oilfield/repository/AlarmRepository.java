@@ -31,4 +31,6 @@ public interface AlarmRepository extends JpaRepository<Alarm, Long> {
 
     @Query("SELECT COUNT(a) FROM Alarm a WHERE a.isAcknowledged = false")
     Long countUnacknowledgedAlarms();
+
+    boolean existsByWellIdAndAlarmTypeAndAlarmTimeAfter(String wellId, String alarmType, LocalDateTime alarmTime);
 }

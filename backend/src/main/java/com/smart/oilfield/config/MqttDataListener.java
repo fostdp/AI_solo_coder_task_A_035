@@ -2,7 +2,7 @@ package com.smart.oilfield.config;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.smart.oilfield.service.DataReceiveService;
+import com.smart.oilfield.service.WellDataReceiver;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -26,7 +26,7 @@ import javax.annotation.PreDestroy;
 public class MqttDataListener {
 
     @Autowired
-    private DataReceiveService dataReceiveService;
+    private WellDataReceiver wellDataReceiver;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -91,9 +91,9 @@ public class MqttDataListener {
             String wellType = node.has("wellType") ? node.get("wellType").asText() : "";
 
             if ("INJECTION".equalsIgnoreCase(wellType) || node.has("waterVolume")) {
-                dataReceiveService.receiveInjectionData(payload);
+                wellDataReceiver.receiveInjectionData(payload);
             } else if ("PRODUCTION".equalsIgnoreCase(wellType) || node.has("oilVolume")) {
-                dataReceiveService.receiveProductionData(payload);
+                wellDataReceiver.receiveProductionData(payload);
             } else {
                 log.warn("Unknown data type received: {}", payload);
             }

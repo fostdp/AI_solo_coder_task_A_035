@@ -41,11 +41,42 @@ mqtt:
   username: admin
   password: admin
   alarm-topic: oilfield/alarms
+  allocation-topic: oilfield/allocation
   data-topic: oilfield/data/+
   message-expiry-seconds: 300
   max-offline-messages: 1000
   max-retry-attempts: 3
   flush-interval-ms: 10000
+
+waterflood:
+  history:
+    days: 30
+    min-regression-days: 7
+  allocation:
+    max-water-increase-rate: 0.2
+    max-water-decrease-rate: 0.3
+    min-adjustment-rate: 0.02
+    min-water-volume: 10.0
+    simplex-threshold: 50
+    max-subproblem-size: 40
+    max-iterations: 100
+    convergence-threshold: 0.000001
+    initial-step-size: 0.01
+    step-decay-rate: 0.99
+    min-step-size: 0.0001
+  curve:
+    default-slope: 0.015
+    default-intercept: 0.0
+    default-water-cut-rate: 0.001
+    oil-gain-multiplier: 1000.0
+    water-cut-penalty-multiplier: 500.0
+  effectiveness:
+    high-threshold: 0.7
+    medium-threshold: 0.4
+    default-value: 0.5
+
+scheduling:
+  enabled: true
 
 allocation:
   schedule: "0 0 2 * * ?"

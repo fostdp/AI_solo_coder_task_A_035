@@ -6,7 +6,7 @@ import com.smart.oilfield.entity.ProductionData;
 import com.smart.oilfield.entity.WaterInjectionData;
 import com.smart.oilfield.repository.ProductionDataRepository;
 import com.smart.oilfield.repository.WaterInjectionDataRepository;
-import com.smart.oilfield.service.DataReceiveService;
+import com.smart.oilfield.service.WellDataReceiver;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +22,7 @@ import java.util.Map;
 public class DataController {
 
     @Autowired
-    private DataReceiveService dataReceiveService;
+    private WellDataReceiver wellDataReceiver;
 
     @Autowired
     private WaterInjectionDataRepository injectionDataRepository;
@@ -33,14 +33,14 @@ public class DataController {
     @PostMapping("/injection")
     public ResponseEntity<WaterInjectionData> receiveInjectionData(
             @RequestBody InjectionDataDTO dto) {
-        WaterInjectionData saved = dataReceiveService.saveInjectionData(dto);
+        WaterInjectionData saved = wellDataReceiver.saveInjectionData(dto);
         return ResponseEntity.ok(saved);
     }
 
     @PostMapping("/production")
     public ResponseEntity<ProductionData> receiveProductionData(
             @RequestBody ProductionDataDTO dto) {
-        ProductionData saved = dataReceiveService.saveProductionData(dto);
+        ProductionData saved = wellDataReceiver.saveProductionData(dto);
         return ResponseEntity.ok(saved);
     }
 
@@ -51,7 +51,7 @@ public class DataController {
         int failed = 0;
         for (InjectionDataDTO dto : dtos) {
             try {
-                dataReceiveService.saveInjectionData(dto);
+                wellDataReceiver.saveInjectionData(dto);
                 success++;
             } catch (Exception e) {
                 failed++;
@@ -70,7 +70,7 @@ public class DataController {
         int failed = 0;
         for (ProductionDataDTO dto : dtos) {
             try {
-                dataReceiveService.saveProductionData(dto);
+                wellDataReceiver.saveProductionData(dto);
                 success++;
             } catch (Exception e) {
                 failed++;

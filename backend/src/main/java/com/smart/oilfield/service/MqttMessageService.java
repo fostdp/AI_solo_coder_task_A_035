@@ -2,6 +2,7 @@ package com.smart.oilfield.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.smart.oilfield.entity.Alarm;
+import com.smart.oilfield.entity.AllocationSuggestion;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttToken;
@@ -35,6 +36,9 @@ public class MqttMessageService {
 
     @Value("${mqtt.alarm-topic}")
     private String alarmTopic;
+
+    @Value("${mqtt.allocation-topic:oilfield/allocation}")
+    private String allocationTopic;
 
     @Value("${mqtt.client-id}")
     private String clientId;
@@ -167,6 +171,26 @@ public class MqttMessageService {
 
         } catch (Exception e) {
             log.error("Failed to prepare alarm for MQTT: {}", alarm.getAlarmId(), e);
+            totalFailed.incrementAndGet();
+        }
+    }
+
+    public void pushAllocationSuggestion(AllocationSuggestion suggestion) {
+        try {
+            String payload = objectMapper.writeValueAsString(suggestion);
+            MqttMessage message = new MqttMessage(payload.getBytes());
+            message.setQos(1);
+            message.setRetained(false);
+            message.setExpiry(messageExpirySeconds);
+
+            if (isConnected.get() && ensureConnected()) {
+                publishWithCallback(allocationTopic, message, suggestion);
+            } else {
+                queueOfflineMessage(allocationTopic, message, suggestion);
+            }
+
+        } catch (Exception e) {
+            log.error("Failed to prepare allocation suggestion for MQTT: {}", suggestion.getWellId(), e);
             totalFailed.incrementAndGet();
         }
     }

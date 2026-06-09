@@ -1,7 +1,7 @@
 package com.smart.oilfield.controller;
 
 import com.smart.oilfield.entity.Alarm;
-import com.smart.oilfield.service.AlarmService;
+import com.smart.oilfield.service.AlarmPublisher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +15,7 @@ import java.util.Map;
 public class AlarmController {
 
     @Autowired
-    private AlarmService alarmService;
+    private AlarmPublisher alarmPublisher;
 
     @GetMapping
     public ResponseEntity<List<Alarm>> getAllAlarms(
@@ -24,19 +24,19 @@ public class AlarmController {
 
         List<Alarm> alarms;
         if (wellId != null) {
-            alarms = alarmService.getAlarmsByWell(wellId);
+            alarms = alarmPublisher.getAlarmsByWell(wellId);
         } else if (level != null) {
-            alarms = alarmService.getAlarmsByLevel(level);
+            alarms = alarmPublisher.getAlarmsByLevel(level);
         } else {
-            alarms = alarmService.getAllAlarms();
+            alarms = alarmPublisher.getAllAlarms();
         }
         return ResponseEntity.ok(alarms);
     }
 
     @GetMapping("/unacknowledged")
     public ResponseEntity<Map<String, Object>> getUnacknowledgedAlarms() {
-        List<Alarm> alarms = alarmService.getUnacknowledgedAlarms();
-        Long count = alarmService.getUnacknowledgedCount();
+        List<Alarm> alarms = alarmPublisher.getUnacknowledgedAlarms();
+        Long count = alarmPublisher.getUnacknowledgedCount();
 
         Map<String, Object> result = new HashMap<>();
         result.put("count", count);
@@ -51,7 +51,7 @@ public class AlarmController {
 
     @PostMapping("/{id}/acknowledge")
     public ResponseEntity<Alarm> acknowledgeAlarm(@PathVariable Long id) {
-        Alarm alarm = alarmService.acknowledgeAlarm(id);
+        Alarm alarm = alarmPublisher.acknowledgeAlarm(id);
         if (alarm == null) {
             return ResponseEntity.notFound().build();
         }
@@ -60,19 +60,18 @@ public class AlarmController {
 
     @PostMapping("/check-now")
     public ResponseEntity<Map<String, Object>> triggerAlarmCheck() {
-        alarmService.checkWaterCutAlarms();
-        alarmService.checkPressureAlarms();
-        alarmService.pushUnsentAlarms();
+        alarmPublisher.triggerManualAlarmCheck();
+        alarmPublisher.pushUnsentAlarms();
 
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Alarm check completed");
-        result.put("unacknowledgedCount", alarmService.getUnacknowledgedCount());
+        result.put("unacknowledgedCount", alarmPublisher.getUnacknowledgedCount());
         return ResponseEntity.ok(result);
     }
 
     @PostMapping("/push-unsent")
     public ResponseEntity<Map<String, Object>> pushUnsentAlarms() {
-        alarmService.pushUnsentAlarms();
+        alarmPublisher.pushUnsentAlarms();
         Map<String, Object> result = new HashMap<>();
         result.put("message", "Unsent alarms pushed successfully");
         return ResponseEntity.ok(result);
